@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PowerWatch — Smart Grid Monitor</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo">⚡</div>
+    <span class="nav-title">Power<span>Watch</span></span>
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="#dashboard" data-view="dashboard" class="active">Dashboard</a></li>
+    <li><a href="#history" data-view="history">History</a></li>
+    <li><a href="#admin" data-view="admin">Admin</a></li>
+    <li><a href="#login" data-view="login">Login</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <span class="clock" id="clock">--:--:--</span>
+    <div class="status-pill" id="sysPill">
+      <div class="status-dot"></div>
+      <span id="sysText">ALL NORMAL</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     VIEW: DASHBOARD
+════════════════════════════════════════════════════ -->
+<section class="view active" id="view-dashboard">
+<div class="page-wrap">
+
+  <div class="alert-banner" id="anomalyBanner">
+    <span class="alert-banner-icon">🔴</span>
+    <span>FAULT DETECTED — <b id="bannerMsg">Voltage spike · Zone A · 289V</b></span>
+  </div>
+
+  <div class="dash-layout">
+    <div class="dash-main">
+
+      <div class="stat-grid">
+        <div class="stat-card" id="sc-volt">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-label">Voltage</div>
+          <div class="stat-value" id="sv-volt">230<span class="stat-unit">V</span></div>
+          <span class="stat-badge badge-ok" id="sb-volt">● NORMAL</span>
+        </div>
+        <div class="stat-card" id="sc-curr">
+          <div class="stat-icon">〜</div>
+          <div class="stat-label">Current</div>
+          <div class="stat-value" id="sv-curr">45<span class="stat-unit">A</span></div>
+          <span class="stat-badge badge-ok" id="sb-curr">● NORMAL</span>
+        </div>
+        <div class="stat-card" id="sc-freq">
+          <div class="stat-icon">📶</div>
+          <div class="stat-label">Frequency</div>
+          <div class="stat-value" id="sv-freq">50.0<span class="stat-unit">Hz</span></div>
+          <span class="stat-badge badge-ok" id="sb-freq">● NORMAL</span>
+        </div>
+        <div class="stat-card" id="sc-temp">
+          <div class="stat-icon">🌡</div>
+          <div class="stat-label">Temperature</div>
+          <div class="stat-value" id="sv-temp">72<span class="stat-unit">°C</span></div>
+          <span class="stat-badge badge-ok" id="sb-temp">● NORMAL</span>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-header"><span class="chart-title">Voltage — Zone A</span><span class="live-tag">● LIVE</span></div>
+          <div class="chart-wrap"><canvas id="chartVolt"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><span class="chart-title">Current — Zone A</span><span class="live-tag">● LIVE</span></div>
+          <div class="chart-wrap"><canvas id="chartCurr"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><span class="chart-title">Frequency — Zone B</span><span class="live-tag">● LIVE</span></div>
+          <div class="chart-wrap"><canvas id="chartFreq"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><span class="chart-title">Temperature — Zone B</span><span class="live-tag">● LIVE</span></div>
+          <div class="chart-wrap"><canvas id="chartTemp"></canvas></div>
+        </div>
+      </div>
+
+      <div class="section-lbl">Zone Health Status</div>
+      <div class="zone-grid">
+        <div class="zone-card">
+          <div class="zone-dot ok" id="dot-a"></div>
+          <div>
+            <div class="zone-name">Zone A — Substation 1</div>
+            <div class="zone-sub" id="zone-a-txt">Healthy · 2 sensors active</div>
+          </div>
+        </div>
+        <div class="zone-card">
+          <div class="zone-dot warn"></div>
+          <div>
+            <div class="zone-name">Zone B — Substation 2</div>
+            <div class="zone-sub">Warning · Temp elevated</div>
+          </div>
+        </div>
+        <div class="zone-card">
+          <div class="zone-dot ok"></div>
+          <div>
+            <div class="zone-name">Zone C — Substation 3</div>
+            <div class="zone-sub">Healthy · All clear</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /dash-main -->
+
+    <div class="dash-side">
+      <div class="section-lbl">Today's Summary</div>
+      <div class="mini-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-val" id="totalFaults">0</div>
+          <div class="mini-stat-lbl">Faults</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-val" id="critCount">0</div>
+          <div class="mini-stat-lbl">Critical</div>
+        </div>
+      </div>
+
+      <div class="section-lbl">Live Alert Feed</div>
+      <div class="alert-feed" id="alertFeed">
+        <div class="alert-item ok">
+          <div class="alert-time">System started</div>
+          <div class="alert-msg">All sensors online</div>
+          <div class="alert-val">Monitoring active ✓</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /dash-layout -->
+</div><!-- /page-wrap -->
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     VIEW: HISTORY
+════════════════════════════════════════════════════ -->
+<section class="view" id="view-history">
+<div class="page-wrap">
+
+  <div class="flex-between mb-20">
+    <div class="page-header" style="margin:0">
+      <div class="page-title">Anomaly History</div>
+      <div class="page-subtitle">Complete log of all detected faults and warnings</div>
+    </div>
+    <button class="btn-primary" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+
+  <div class="summary-grid mb-20">
+    <div class="summary-card">
+      <div class="summary-lbl">Today</div>
+      <div class="summary-num text-orange" id="s-today">0</div>
+      <div class="text-sm text-muted mt-12">faults detected</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-lbl">This Week</div>
+      <div class="summary-num" style="color:var(--yellow)" id="s-week">0</div>
+      <div class="text-sm text-muted mt-12">total anomalies</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-lbl">Critical</div>
+      <div class="summary-num" style="color:var(--red)" id="s-crit">0</div>
+      <div class="text-sm text-muted mt-12">need attention</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-lbl">Avg Z-Score</div>
+      <div class="summary-num text-orange" id="s-zscore">0.00</div>
+      <div class="text-sm text-muted mt-12">fault severity avg</div>
+    </div>
+  </div>
+
+  <div class="filter-bar mb-16">
+    <input type="date" class="filter-input" id="fromDate"/>
+    <input type="date" class="filter-input" id="toDate"/>
+    <select class="filter-input" id="zoneFilter">
+      <option value="">All Zones</option>
+      <option>Zone A</option>
+      <option>Zone B</option>
+      <option>Zone C</option>
+    </select>
+    <select class="filter-input" id="sevFilter">
+      <option value="">All Severity</option>
+      <option>CRITICAL</option>
+      <option>WARNING</option>
+    </select>
+    <input type="text" class="filter-input" placeholder="Search sensor..." id="searchInput" style="flex:1"/>
+    <button class="btn-primary" onclick="applyFilters()">Search</button>
+    <button class="btn-secondary" onclick="clearFilters()">Clear</button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table" id="historyTable">
+      <thead>
+        <tr>
+          <th>Time</th><th>Sensor</th><th>Zone</th><th>Value</th>
+          <th>Z-Score</th><th>Severity</th><th>Message</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     VIEW: ADMIN
+════════════════════════════════════════════════════ -->
+<section class="view" id="view-admin">
+<div class="page-wrap">
+  <div class="flex-between mb-20">
+    <div>
+      <div class="page-title">Admin Panel</div>
+      <div class="page-subtitle">Manage sensors, thresholds, and system settings</div>
+    </div>
+    <button class="btn-primary" onclick="addSensorModal()">+ Add Sensor</button>
+  </div>
+
+  <div class="admin-grid">
+    <div>
+      <div class="section-lbl mb-12">Sensor Management</div>
+      <div class="sensor-list" id="sensorList">
+        <div class="sensor-row">
+          <div class="sensor-info">
+            <div class="sensor-name">Voltage_A</div>
+            <div class="sensor-meta">Zone A &nbsp;·&nbsp; 210 – 250 V &nbsp;·&nbsp; Threshold: ±3σ</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('off')"></button>
+        </div>
+        <div class="sensor-row">
+          <div class="sensor-info">
+            <div class="sensor-name">Current_A</div>
+            <div class="sensor-meta">Zone A &nbsp;·&nbsp; 0 – 100 A &nbsp;·&nbsp; Threshold: ±3σ</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('off')"></button>
+        </div>
+        <div class="sensor-row">
+          <div class="sensor-info">
+            <div class="sensor-name">Frequency_A</div>
+            <div class="sensor-meta">Zone A &nbsp;·&nbsp; 49.5 – 50.5 Hz &nbsp;·&nbsp; Threshold: ±2σ</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('off')"></button>
+        </div>
+        <div class="sensor-row">
+          <div class="sensor-info">
+            <div class="sensor-name">Temp_B</div>
+            <div class="sensor-meta">Zone B &nbsp;·&nbsp; 0 – 85 °C &nbsp;·&nbsp; Threshold: ±2σ</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('off')"></button>
+        </div>
+        <div class="sensor-row">
+          <div class="sensor-info">
+            <div class="sensor-name">Voltage_B</div>
+            <div class="sensor-meta">Zone B &nbsp;·&nbsp; 210 – 250 V &nbsp;·&nbsp; Inactive</div>
+          </div>
+          <button class="toggle off" onclick="this.classList.toggle('off')"></button>
+        </div>
+        <div class="sensor-row">
+          <div class="sensor-info">
+            <div class="sensor-name">Current_C</div>
+            <div class="sensor-meta">Zone C &nbsp;·&nbsp; 0 – 100 A &nbsp;·&nbsp; Threshold: ±3σ</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('off')"></button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-lbl mb-12">System Settings</div>
+      <div class="settings-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Warning Threshold (Z)</label>
+            <input type="number" class="form-control" value="2.0" step="0.1" min="1" max="5"/>
+          </div>
+          <div class="form-group">
+            <label>Critical Threshold (Z)</label>
+            <input type="number" class="form-control" value="3.0" step="0.1" min="1" max="5"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Data Refresh Rate</label>
+            <select class="form-control"><option>1 second</option><option>2 seconds</option><option>5 seconds</option></select>
+          </div>
+          <div class="form-group">
+            <label>Alert Sound</label>
+            <select class="form-control"><option>Enabled</option><option>Disabled</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Buffer Window Size</label>
+            <input type="number" class="form-control" value="50" min="10" max="200"/>
+          </div>
+          <div class="form-group">
+            <label>Max Alert Feed Items</label>
+            <input type="number" class="form-control" value="8" min="5" max="20"/>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Admin Username</label>
+            <input type="text" class="form-control" value="admin"/>
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" class="form-control" placeholder="••••••••"/>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+      </div>
+
+      <div class="card card-pad mt-12">
+        <div class="card-title mb-12">⚙ DSA Engine Status</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="flex-between"><span class="text-sm text-muted">Circular Buffer Size</span><span class="text-sm text-mono text-orange">50 readings</span></div>
+          <div class="flex-between"><span class="text-sm text-muted">Z-Score Window</span><span class="text-sm text-mono text-orange">50 samples</span></div>
+          <div class="flex-between"><span class="text-sm text-muted">Alert Queue (Heap)</span><span class="text-sm text-mono text-orange" id="heapSize">0 items</span></div>
+          <div class="flex-between"><span class="text-sm text-muted">Sensor Map Entries</span><span class="text-sm text-mono text-orange">4 sensors</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════
+     VIEW: LOGIN
+════════════════════════════════════════════════════ -->
+<section class="view" id="view-login">
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-top">
+      <div class="login-logo">⚡</div>
+      <div class="login-title">Admin Login</div>
+      <div class="login-sub">Enter credentials to access the control panel</div>
+    </div>
+    <div class="login-form">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" class="form-control" id="username" placeholder="admin" autocomplete="username"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-control" id="password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn-login" onclick="doLogin()">Login →</button>
+    </div>
+    <a href="#dashboard" data-view="dashboard" class="login-back">← Back to Dashboard</a>
+  </div>
+</div>
+</section>
+
+<!-- Toast (shared by all views) -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
